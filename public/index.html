@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat com Salas</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    #messages { border: 1px solid #ccc; height: 200px; overflow-y: scroll; margin-bottom: 10px; padding: 10px; }
+  </style>
+</head>
+<body>
+  <h2>Chat por Salas</h2>
+
+  <select id="roomSelect">
+    <option value="Sala 1">Sala 1</option>
+    <option value="Sala 2">Sala 2</option>
+    <option value="Sala 3">Sala 3</option>
+    <option value="Sala 4">Sala 4</option>
+  </select>
+  <button id="joinBtn">Entrar na Sala</button>
+
+  <div id="chat" style="display:none;">
+    <div id="messages"></div>
+    <input id="messageInput" type="text" placeholder="Digite sua mensagem" />
+    <button id="sendBtn">Enviar</button>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const roomSelect = document.getElementById('roomSelect');
+    const joinBtn = document.getElementById('joinBtn');
+    const chat = document.getElementById('chat');
+    const messagesDiv = document.getElementById('messages');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    let currentRoom = null;
+
+    joinBtn.onclick = () => {
+      currentRoom = roomSelect.value;
+      socket.emit('joinRoom', currentRoom);
+      messagesDiv.innerHTML = '';
+      chat.style.display = 'block';
+    };
+
+    sendBtn.onclick = () => {
+      const msg = messageInput.value.trim();
+      if (msg !== '') {
+        socket.emit('chatMessage', msg);
+        messageInput.value = '';
+      }
+    };
+
+    socket.on('chatMessage', (msg) => {
+      const div = document.createElement('div');
+      div.textContent = msg;
+      messagesDiv.appendChild(div);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    });
+  </script>
+</body>
+</html>
